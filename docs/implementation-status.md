@@ -81,6 +81,8 @@ Commands executed in the development container and results:
 | `pnpm db:start`, `pnpm db:reset`, `pnpm test:db` | Pass: 76 pgTAP assertions on a seeded database (64 in the isolation file) |
 | `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium pnpm test:e2e` | Pass: 60 tests (desktop and Pixel 7 emulation) against the local Supabase stack, including Data API attack tests |
 
+GitHub Actions run https://github.com/salehmostafa-88/Tashteeb/actions/runs/36834970131: quality, end-to-end (with local Supabase) and database jobs all passed.
+
 Acceptance coverage: SEC-01, SEC-02, SEC-03, SEC-04, SEC-05, SEC-06, SEC-07 pass through direct database/RPC (pgTAP), the HTTP Data API (Playwright `api-isolation.spec.ts`) and the UI. SEC-11 (expired, reused, revoked and mismatched invitations; open-redirect guard) and SEC-13 (no direct writes; audit append-only) pass. Login and role navigation verified in Arabic.
 
 Screenshots (shared in the review conversation, not committed): Arabic phone login; owner projects, project detail, team and settings in Arabic on desktop; team in English on phone; engineer projects and client portal in Arabic on phone.
