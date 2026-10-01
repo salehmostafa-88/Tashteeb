@@ -7,16 +7,13 @@ import "@fontsource/noto-sans/latin-700.css";
 import "../globals.css";
 
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { publicEnv } from "@/lib/env";
 import { directionFor } from "@/lib/i18n/direction";
-
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
 
 export const metadata: Metadata = {
   title: publicEnv.NEXT_PUBLIC_PRODUCT_NAME,
@@ -26,6 +23,8 @@ export const metadata: Metadata = {
 export default async function LocaleLayout({ children, params }: LayoutProps<"/[locale]">) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
+  // Per-request rendering: pages are user-specific and carry a CSP nonce.
+  await headers();
   setRequestLocale(locale);
 
   return (

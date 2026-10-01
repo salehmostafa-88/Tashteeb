@@ -2,55 +2,9 @@
 // fixtures/financial-cases.json. No real studio, client or project is represented.
 // Removed once Phase 1/2 read models replace the placeholder screens.
 
-import type { CurrencyCode } from "@/lib/money/currency";
 import type { ClientDashboardDto } from "@/modules/portal/dto";
 
-export const DEMO_ORG_ID = "demo";
 export const DEMO_PROJECT_ID = "3e51b43e-5068-46a4-b815-d6bceef81003";
-
-export interface DemoProjectRow {
-  id: string;
-  code: string;
-  display_name: string;
-  currency: CurrencyCode;
-  status: "active" | "archived";
-  approved_cost_base_minor: string;
-  pending_review_count: number;
-  last_approved_on: string | null;
-}
-
-export const demoProjects: DemoProjectRow[] = [
-  {
-    id: DEMO_PROJECT_ID,
-    code: "DEMO-001",
-    display_name: "Demo Apartment",
-    currency: "EGP",
-    status: "active",
-    approved_cost_base_minor: "12000003",
-    pending_review_count: 2,
-    last_approved_on: "2026-09-28",
-  },
-  {
-    id: "3e51b43e-5068-46a4-b815-d6bceef81004",
-    code: "DEMO-002",
-    display_name: "فيلا تجريبية — تشطيب كامل",
-    currency: "EGP",
-    status: "active",
-    approved_cost_base_minor: "0",
-    pending_review_count: 0,
-    last_approved_on: null,
-  },
-  {
-    id: "3e51b43e-5068-46a4-b815-d6bceef81005",
-    code: "DEMO-003",
-    display_name: "Demo Office Fit-out",
-    currency: "USD",
-    status: "archived",
-    approved_cost_base_minor: "4550000",
-    pending_review_count: 0,
-    last_approved_on: "2026-03-14",
-  },
-];
 
 const placeholderStages = Array.from({ length: 6 }, (_, index) => ({
   stable_stage_key: `3e51b43e-5068-46a4-b815-d6bceef8101${index}`,

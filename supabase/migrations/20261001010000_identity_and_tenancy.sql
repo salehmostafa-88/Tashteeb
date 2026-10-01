@@ -579,7 +579,7 @@ begin
   if p_token is null or p_token !~ '^[0-9a-f]{64}$' then
     return jsonb_build_object('status', 'not_found');
   end if;
-  select i.*, o.name as organization_name, p.display_name as project_name
+  select i.*, o.name as organization_name, o.timezone as organization_timezone, p.display_name as project_name
     into r
     from public.invitations i
     join public.organizations o on o.id = i.organization_id
@@ -599,7 +599,8 @@ begin
     'organization_name', r.organization_name,
     'project_name', r.project_name,
     'email_hint', left(r.invited_email, 2) || '***' || substr(r.invited_email, strpos(r.invited_email, '@')),
-    'expires_at', r.expires_at
+    'expires_at', r.expires_at,
+    'timezone', r.organization_timezone
   );
 end;
 $$;

@@ -1,114 +1,95 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { MoneyAmount } from "@/components/MoneyAmount";
+import { EmptyState } from "@/components/StatePanels";
+import { ui } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
-import { formatDateOnly, formatInteger } from "@/lib/i18n/format";
-import { DEMO_PROJECT_ID, demoProjects } from "@/modules/demo/synthetic";
+import { formatInteger } from "@/lib/i18n/format";
+import { requireOrganization, listProjects } from "@/modules/identity/queries";
 
 export default async function ProjectsPage({ params }: PageProps<"/[locale]/app/[orgId]/projects">) {
-  const { locale: rawLocale } = await params;
-  const locale = rawLocale as AppLocale;
+  const { locale: raw, orgId } = await params;
+  const locale = raw as AppLocale;
   setRequestLocale(locale);
-  const t = await getTranslations("staff");
-  const common = await getTranslations("common");
-  const projects = demoProjects;
-
-  const lastApproved = (date: string | null) => (date ? formatDateOnly(date, locale) : common("notRecorded"));
+  const t = await getTranslations("projects");
+  const org = await requireOrganization(orgId);
+  const projects = await listProjects(org.id);
+  const isOwner = org.role === "owner";
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-ink">{t("projectsTitle")}</h1>
-        <p className="text-muted">{t("projectsSummary", { count: projects.length, countText: formatInteger(projects.length, locale) })}</p>
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-ink">{t("title")}</h1>
+          <p className="text-muted">{t("count", { count: projects.length, countText: formatInteger(projects.length, locale) })}</p>
+        </div>
+        {isOwner && (
+          <Link href={`/app/${org.id}/projects/new`} className={ui.buttonPrimary}>
+            {t("new")}
+          </Link>
+        )}
       </header>
 
       {projects.length === 0 ? (
-        <section className="rounded-[var(--radius-card)] border border-line bg-surface p-8 text-center">
-          <h2 className="text-lg font-semibold">{t("emptyTitle")}</h2>
-          <p className="text-muted">{t("emptyBody")}</p>
-        </section>
+        <EmptyState title={t("emptyTitle")} body={isOwner ? t("emptyOwner") : t("emptyStaff")} />
       ) : (
         <>
-          {/* Desktop and tablet: spreadsheet-like table. */}
-          <div className="hidden overflow-x-auto rounded-[var(--radius-card)] border border-line bg-surface md:block">
-            <table className="w-full border-collapse text-start" data-testid="projects-table">
-              <thead className="sticky top-0 bg-surface">
+          <div className={`${ui.card} hidden overflow-x-auto md:block`}>
+            <table className="w-full border-collapse" data-testid="projects-table">
+              <thead>
                 <tr className="border-b border-line text-sm text-muted">
-                  <th scope="col" className="px-4 py-3 text-start font-semibold">{t("columnCode")}</th>
-                  <th scope="col" className="px-4 py-3 text-start font-semibold">{t("columnName")}</th>
-                  <th scope="col" className="px-4 py-3 text-start font-semibold">{t("columnStatus")}</th>
-                  <th scope="col" className="px-4 py-3 text-end font-semibold" title={t("approvedCostHint")}>
-                    {t("columnApprovedCost")}
-                  </th>
-                  <th scope="col" className="px-4 py-3 text-end font-semibold">{t("columnPending")}</th>
-                  <th scope="col" className="px-4 py-3 text-start font-semibold">{t("columnLastApproved")}</th>
+                  <th scope="col" className="px-4 py-3 text-start font-semibold">{t("code")}</th>
+                  <th scope="col" className="px-4 py-3 text-start font-semibold">{t("name")}</th>
+                  <th scope="col" className="px-4 py-3 text-start font-semibold">{t("currency")}</th>
+                  <th scope="col" className="px-4 py-3 text-start font-semibold">{t("status")}</th>
                 </tr>
               </thead>
               <tbody>
-                {projects.map((project) => (
-                  <tr key={project.id} className="border-b border-line last:border-b-0 hover:bg-accent-soft">
+                {projects.map((p) => (
+                  <tr key={p.id} className="border-b border-line last:border-b-0 hover:bg-accent-soft">
                     <td className="px-4 py-3">
-                      <bdi dir="ltr" className="font-mono text-sm">{project.code}</bdi>
+                      <bdi dir="ltr" className="font-mono text-sm">{p.code}</bdi>
                     </td>
                     <td className="px-4 py-3 font-semibold">
-                      <bdi>{project.display_name}</bdi>
+                      <Link href={`/app/${org.id}/projects/${p.id}`} className="hover:underline">
+                        <bdi>{p.display_name}</bdi>
+                      </Link>
                     </td>
                     <td className="px-4 py-3">
-                      <StatusChip status={project.status} label={t(project.status === "active" ? "statusActive" : "statusArchived")} />
+                      <bdi dir="ltr">{p.currency}</bdi>
                     </td>
-                    <td className="px-4 py-3 text-end">
-                      <MoneyAmount minor={project.approved_cost_base_minor} currency={project.currency} locale={locale} />
+                    <td className="px-4 py-3">
+                      <StatusChip active={p.status === "active"} label={t(`status_${p.status}`)} />
                     </td>
-                    <td className="tabular px-4 py-3 text-end">{formatInteger(project.pending_review_count, locale)}</td>
-                    <td className="px-4 py-3 text-muted">{lastApproved(project.last_approved_on)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className="border-t border-line px-4 py-2 text-xs text-muted">{t("approvedCostHint")}</p>
           </div>
-
-          {/* Phone: one card per project, no horizontal scrolling. */}
           <ul className="flex flex-col gap-3 md:hidden" data-testid="projects-cards">
-            {projects.map((project) => (
-              <li key={project.id} className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <span className="font-semibold">
-                    <bdi>{project.display_name}</bdi>
+            {projects.map((p) => (
+              <li key={p.id}>
+                <Link href={`/app/${org.id}/projects/${p.id}`} className={`${ui.card} flex flex-col gap-2 p-4`}>
+                  <span className="flex items-start justify-between gap-3">
+                    <bdi className="font-semibold">{p.display_name}</bdi>
+                    <StatusChip active={p.status === "active"} label={t(`status_${p.status}`)} />
                   </span>
-                  <StatusChip status={project.status} label={t(project.status === "active" ? "statusActive" : "statusArchived")} />
-                </div>
-                <bdi dir="ltr" className="self-start font-mono text-sm text-muted">{project.code}</bdi>
-                <dl className="grid grid-cols-2 gap-2 text-sm">
-                  <dt className="text-muted">{t("columnApprovedCost")}</dt>
-                  <dd className="text-end">
-                    <MoneyAmount minor={project.approved_cost_base_minor} currency={project.currency} locale={locale} />
-                  </dd>
-                  <dt className="text-muted">{t("columnPending")}</dt>
-                  <dd className="tabular text-end">{formatInteger(project.pending_review_count, locale)}</dd>
-                  <dt className="text-muted">{t("columnLastApproved")}</dt>
-                  <dd className="text-end">{lastApproved(project.last_approved_on)}</dd>
-                </dl>
+                  <span className="flex gap-3 text-sm text-muted">
+                    <bdi dir="ltr" className="font-mono">{p.code}</bdi>
+                    <bdi dir="ltr">{p.currency}</bdi>
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
-
-          <Link href={`/portal/${DEMO_PROJECT_ID}`} className="self-start font-semibold text-primary underline-offset-4 hover:underline">
-            {t("openPortalPreview")}
-          </Link>
         </>
       )}
     </div>
   );
 }
 
-function StatusChip({ status, label }: { status: "active" | "archived"; label: string }) {
+function StatusChip({ active, label }: { active: boolean; label: string }) {
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-semibold ${
-        status === "active" ? "bg-[#e2f3e8] text-success" : "bg-canvas text-muted"
-      }`}
-    >
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-semibold ${active ? "bg-[#e2f3e8] text-success" : "bg-canvas text-muted"}`}>
       {label}
     </span>
   );
