@@ -2,7 +2,7 @@
 
 Arabic-first SaaS for small interior design and fit-out studios: staff record project costs and site updates in simple tables and phone forms, and each studio's clients see a branded dashboard of spending, stage progress and approved photos. The product name is temporary and configurable (`NEXT_PUBLIC_PRODUCT_NAME`).
 
-**Status:** Phase 0 (application shell). Screens show clearly labelled synthetic data; there is no login, database feature or deployment yet. See [implementation status](docs/implementation-status.md).
+**Status:** Phase 1 (identity and tenant isolation). Sign-in, invitations, studios, projects, team and client access work against a local Supabase stack; money, progress and photos arrive in later phases. Nothing is deployed. See [implementation status](docs/implementation-status.md).
 
 ## Local setup
 
@@ -14,13 +14,17 @@ cp .env.example .env.local     # optional in Phase 0; defaults work
 pnpm dev                       # http://localhost:3000 → /ar or /en from the device language
 ```
 
-Local database (Postgres 17 via the Supabase CLI, synthetic seed only):
+Local Supabase (Postgres 17, Auth and REST via the Supabase CLI and Docker; synthetic seed only):
 
 ```bash
-pnpm exec supabase db start    # Postgres only; `pnpm db:start` starts the full local stack
+pnpm db:start                  # start the local stack (studio and other extras excluded)
+pnpm env:local                 # write .env.local with the local URL and publishable key
+pnpm dev                       # sign in with a seeded account below
 pnpm test:db                   # pgTAP tests in supabase/tests
 pnpm db:reset                  # re-apply migrations and seed
 ```
+
+Seeded local accounts (password `Local-Dev-Pass-1`, local databases only): `owner.a@example.test`, `finance.a@example.test`, `engineer.a@example.test`, `unassigned.a@example.test`, `client1@example.test` (Studio A); `owner.b@example.test`, `client2@example.test` (Studio B); `operator@example.test` (platform operator). Emails sent locally (password reset, confirmations) appear in Mailpit at http://127.0.0.1:54324.
 
 ## Commands
 
@@ -31,7 +35,7 @@ pnpm db:reset                  # re-apply migrations and seed
 | `pnpm lint` | ESLint |
 | `pnpm typecheck` | Route type generation + `tsc --noEmit` |
 | `pnpm test:unit` | Vitest unit tests (`tests/unit`) |
-| `pnpm test:e2e` | Playwright on desktop and phone viewports; builds and starts the app on port 3100 |
+| `pnpm test:e2e` | Playwright on desktop and phone viewports against the local Supabase stack; builds and starts the app on port 3100 (run `NEXT_PUBLIC_APP_URL=http://localhost:3100 pnpm env:local` first) |
 | `pnpm test:db` | pgTAP database tests (needs the local database running) |
 | `pnpm check:spec` | Validates spec links, JSON and the synthetic financial fixtures |
 

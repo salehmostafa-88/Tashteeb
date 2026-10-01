@@ -4,8 +4,8 @@ Running engineering record. Do not replace rows with unsupported "complete" labe
 
 | Phase | Status | Evidence |
 | --- | --- | --- |
-| 0 Repository baseline | Delivered, awaiting owner review at the Phase 0 gate | See Phase 0 record below |
-| 1 Identity and isolation | Not started | Baseline privilege migration only |
+| 0 Repository baseline | Delivered; owner approved continuing to Phase 1 | See Phase 0 record below |
+| 1 Identity and isolation | Delivered, awaiting owner review at the Phase 1 gate | See Phase 1 record below; owner MFA enforcement still open |
 | 2 Financial engine | Not started | Money primitives and rounding exist; no fee engine, ledger or SQL calculation |
 | 3 Staff workspace | Not started | Synthetic placeholder screen only |
 | 4 Client portal and progress | Not started | Synthetic client shell only |
@@ -57,4 +57,42 @@ Not done or not verified in Phase 0:
 - Locale now follows the device language (O12): Arabic devices get `/ar`, English and all other devices get `/en`, and an explicit switch is remembered. E2E: 32 tests pass locally (`PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium pnpm test:e2e`), including Arabic, English and French device locales and the remembered switch.
 - Owner decisions O13–O15 (AI photo capture, easiest entry, rich client and management presentation) recorded in `docs/00-decisions.md`, designed in `docs/14-ai-capture-and-insights.md` and ADR 0007. No AI code exists yet; it waits for provider approval, consent and private sample images.
 
-Next phase: Phase 1 identity and tenant isolation, after owner approval of this baseline. The AI accuracy spike can run in parallel once its open decisions are answered.
+AI decisions: provider-configurable bring-your-own-key (O16). The accuracy spike waits for owner sample images.
+
+## Phase 1 record (1 October 2026)
+
+Branch `claude/great-rubin-ehb4g2`.
+
+Delivered:
+
+- Migration `20261001010000_identity_and_tenancy.sql`: organizations, profiles (auto-created from auth users), memberships with roles owner/finance/manager/engineer/collaborator (collaborators must expire, owners never), projects (currency allowlist, case-insensitive unique code per studio), staff assignments, client project grants, invitations (256-bit single-use tokens stored as SHA-256 hashes, 7-day expiry, bound to email), append-only audit events with actor and device id, platform operators. Composite foreign keys keep every reference inside one organization. RLS on every table; client roles have SELECT only; all writes go through SECURITY DEFINER commands with a pinned empty search_path that derive the actor from `auth.uid()`. Last-owner protection. Safe client projection `get_portal_project` with whitelisted fields only.
+- Next.js: Supabase SSR session refresh in `src/proxy.ts`, `sp_device` cookie forwarded as `x-device-id`, nonce-based Content Security Policy, private no-store responses. Sign-in, sign-out (this device only), password reset by email link, invitation preview/sign-up/accept, workspace chooser, studio workspace with role-aware navigation, projects list/create/detail, staff assignment and client access management, team and invitations management with copy and WhatsApp share of invite links (O08), studio branding settings (name, English name, accent with contrast fallback, timezone), operator studio creation, client portal list and safe project view with unknown financial/progress states, staff "preview client view". Arabic and English throughout; phone layouts use cards instead of tables.
+- Synthetic seed with two studios, eight accounts, four projects and two client grants (`supabase/seed.sql`), `pnpm env:local` helper, `pnpm db:start` excluding unneeded services.
+- Owner MFA and recovery plan: `docs/runbooks/owner-mfa-and-recovery.md`.
+
+Commands executed in the development container and results:
+
+| Command | Result |
+| --- | --- |
+| `pnpm lint` | Pass |
+| `pnpm typecheck` | Pass |
+| `pnpm test:unit` | Pass: 8 files, 115 tests (adds open-redirect guard, device id, CSP, error mapping) |
+| `pnpm check:spec` | Pass |
+| `pnpm db:start`, `pnpm db:reset`, `pnpm test:db` | Pass: 76 pgTAP assertions on a seeded database (64 in the isolation file) |
+| `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium pnpm test:e2e` | Pass: 60 tests (desktop and Pixel 7 emulation) against the local Supabase stack, including Data API attack tests |
+
+Acceptance coverage: SEC-01, SEC-02, SEC-03, SEC-04, SEC-05, SEC-06, SEC-07 pass through direct database/RPC (pgTAP), the HTTP Data API (Playwright `api-isolation.spec.ts`) and the UI. SEC-11 (expired, reused, revoked and mismatched invitations; open-redirect guard) and SEC-13 (no direct writes; audit append-only) pass. Login and role navigation verified in Arabic.
+
+Screenshots (shared in the review conversation, not committed): Arabic phone login; owner projects, project detail, team and settings in Arabic on desktop; team in English on phone; engineer projects and client portal in Arabic on phone.
+
+Not done or not verified in Phase 1:
+
+- Owner MFA is planned, not enforced (TOTP is enabled in Auth config; enrolment UI, step-up and the `aal2` check are listed in the runbook). This must close before the pilot.
+- Email confirmation is off locally (Supabase default for local); the sign-up flow handles the confirmation-required path but it has not been exercised against a real mailer.
+- Rate limiting relies on Supabase Auth defaults; no application-level limit on invitation preview yet (tokens are 256-bit, so guessing is infeasible).
+- An owner-only page opened by a non-owner shows "Not allowed" with HTTP 200 (Next's `forbidden()` is experimental); no data is rendered.
+- Logo upload, profile editing and per-user language preference are not built (logo arrives with uploads in Phase 3).
+- No real-device testing; no native Arabic copy review yet.
+- All translation messages are sent to the browser on every page (no data, but larger payload); scoping per page is a later optimisation.
+
+Next phase: Phase 2 financial engine, after owner review of Phase 1.

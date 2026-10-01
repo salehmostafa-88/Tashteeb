@@ -193,7 +193,7 @@
     "emptyStaff": "You haven't been assigned to a project yet.",
     "count": "{count, plural, =0 {No projects} one {{countText} project} other {{countText} projects}}",
     "createTitle": "Create a project",
-    "codeHint": "Latin letters and digits, e.g. A-001. Cannot change later.",
+    "codeHint": "Latin letters, digits and dashes, e.g. VILLA-01. Cannot change later.",
     "currencyHint": "One currency per project; locked after the first approved financial entry.",
     "create": "Create project",
     "creating": "Creating…"

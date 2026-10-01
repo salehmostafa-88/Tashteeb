@@ -26,10 +26,4 @@ export async function requireSessionUser(locale: AppLocale, returnTo: string): P
   return user as SessionUser;
 }
 
-/** Only same-site, locale-prefixed paths are allowed as post-login destinations. */
-export function safeReturnPath(value: unknown, locale: AppLocale): string {
-  if (typeof value === "string" && /^\/(ar|en)(\/[A-Za-z0-9\-._~/%?=&]*)?$/.test(value) && !value.startsWith("//")) {
-    return value;
-  }
-  return `/${locale}/app`;
-}
+export { safeReturnPath } from "./return-path";

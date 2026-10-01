@@ -9,14 +9,14 @@ export function FormMessage({ state, successText }: { state: FormState; successT
   if (state.status === "error") {
     const key = t.has(state.code) ? state.code : "UNKNOWN";
     return (
-      <p role="alert" className="rounded-[var(--radius-input)] bg-[#fdeef0] px-3 py-2 text-sm text-danger">
+      <p role="alert" data-testid="form-error" className="rounded-[var(--radius-input)] bg-[#fdeef0] px-3 py-2 text-sm text-danger">
         {t(key)}
       </p>
     );
   }
   if (state.status === "success" && successText) {
     return (
-      <p role="status" className="rounded-[var(--radius-input)] bg-[#e2f3e8] px-3 py-2 text-sm text-success">
+      <p role="status" data-testid="form-success" className="rounded-[var(--radius-input)] bg-[#e2f3e8] px-3 py-2 text-sm text-success">
         {successText}
       </p>
     );

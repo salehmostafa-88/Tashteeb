@@ -1,5 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Local Supabase settings written by `pnpm env:local` (ignored by Git).
+try {
+  process.loadEnvFile(".env.local");
+} catch {
+  // CI provides the variables directly.
+}
+
 const port = Number(process.env.E2E_PORT ?? 3100);
 // Optional local override for a preinstalled browser (e.g. sandboxed containers).
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || undefined;

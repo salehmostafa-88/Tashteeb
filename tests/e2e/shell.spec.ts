@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const PORTAL = "/portal/3e51b43e-5068-46a4-b815-d6bceef81003";
+const PORTAL = "/demo/portal";
 const WESTERN_DIGIT = /[0-9]/;
 const ARABIC_INDIC_DIGIT = /[٠-٩]/;
 
@@ -58,16 +58,16 @@ test("English portal shows exact Western-digit amounts", async ({ page }) => {
   await expect(page.getByText("Overall progress not available").first()).toBeVisible();
 });
 
-test("synthetic data is labelled on every placeholder screen", async ({ page }) => {
-  for (const path of ["/ar", "/en/app/demo/projects", `/ar${PORTAL}`]) {
+test("the design preview is labelled as synthetic", async ({ page }) => {
+  for (const path of [`/ar${PORTAL}`, `/en${PORTAL}`]) {
     await page.goto(path);
     await expect(page.getByTestId("synthetic-banner")).toBeVisible();
   }
 });
 
-test("unknown organization and project return not found", async ({ page }) => {
-  expect((await page.goto("/en/app/another-org/projects"))?.status()).toBe(404);
-  expect((await page.goto("/en/portal/00000000-0000-0000-0000-000000000000"))?.status()).toBe(404);
+test("protected pages redirect signed-out visitors to login", async ({ page }) => {
+  await page.goto("/en/portal/00000000-0000-0000-0000-000000000000");
+  await expect(page).toHaveURL(/\/en\/login\?next=/);
 });
 
 test("security headers are set", async ({ page }) => {
@@ -79,7 +79,7 @@ test("security headers are set", async ({ page }) => {
 });
 
 for (const locale of ["ar", "en"]) {
-  for (const path of ["", "/app/demo/projects", PORTAL]) {
+  for (const path of ["", "/login", PORTAL]) {
     test(`no horizontal overflow at 360px: /${locale}${path}`, async ({ page }) => {
       await page.setViewportSize({ width: 360, height: 780 });
       await page.goto(`/${locale}${path}`);

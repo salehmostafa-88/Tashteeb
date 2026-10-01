@@ -68,7 +68,8 @@ export async function signInAction(_prev: FormState, formData: FormData): Promis
 export async function signOutAction(formData: FormData): Promise<void> {
   const lc = locale.catch(routing.defaultLocale).parse(formData.get("locale"));
   const supabase = await createSupabaseServerClient();
-  await supabase.auth.signOut();
+  // This device only; other devices keep their sessions.
+  await supabase.auth.signOut({ scope: "local" });
   redirect({ href: "/login", locale: lc });
 }
 
