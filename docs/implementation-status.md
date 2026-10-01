@@ -40,11 +40,12 @@ Commands executed in the development container and results:
 | `pnpm check:spec` | Pass: 10 financial cases, 4 rounding cases, links |
 | Clean clone: `pnpm install --frozen-lockfile`, build, lint, typecheck, unit | Pass (after fixing a lockfile/manifest mismatch the first clean-clone run caught) |
 
+GitHub Actions run 1 (https://github.com/salehmostafa-88/Tashteeb/actions/runs/36827203444): quality, e2e and database jobs all passed.
+
 Screenshots: Arabic and English at 390px and 1440px for all three screens were captured locally and shared in the review conversation; they are not committed.
 
 Not done or not verified in Phase 0:
 
-- GitHub Actions has not run yet; it runs on first push. The `database` job pulls Supabase images in CI.
 - `supabase start` (full stack) failed in the development container because one image download was blocked by the container's network proxy; `supabase db start` (Postgres only) works and is what Phase 0 needs. Auth, Storage and Studio services are untested locally.
 - No real-device testing (none required for Phase 0). Phone results are Chromium emulation.
 - No Arabic native-speaker copy review yet.
