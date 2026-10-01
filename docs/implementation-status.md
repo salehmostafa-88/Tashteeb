@@ -52,4 +52,9 @@ Not done or not verified in Phase 0:
 - Content Security Policy is not set yet (basic security headers are); planned with auth in Phase 1 and hardening in Phase 7.
 - Repository licence choice remains open (O09).
 
-Next phase: Phase 1 identity and tenant isolation, after owner approval of this baseline.
+### Follow-up after owner review (1 October 2026)
+
+- Locale now follows the device language (O12): Arabic devices get `/ar`, English and all other devices get `/en`, and an explicit switch is remembered. E2E: 32 tests pass locally (`PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium pnpm test:e2e`), including Arabic, English and French device locales and the remembered switch.
+- Owner decisions O13–O15 (AI photo capture, easiest entry, rich client and management presentation) recorded in `docs/00-decisions.md`, designed in `docs/14-ai-capture-and-insights.md` and ADR 0007. No AI code exists yet; it waits for provider approval, consent and private sample images.
+
+Next phase: Phase 1 identity and tenant isolation, after owner approval of this baseline. The AI accuracy spike can run in parallel once its open decisions are answered.

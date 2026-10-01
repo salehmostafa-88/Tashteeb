@@ -85,3 +85,12 @@ After Phase 0 approve stack and repo baseline. Before Phase 2 ends confirm finan
 ## Delivery order note (owner decision O11)
 
 Approved order: Phase 0, 1, 2, 3, 4; then a controlled one-off reviewed import of the pilot project (the reconciliation and sign-off parts of Phase 6, run from private inputs outside Git); then an online-capture pilot with on-device draft autosave; then Phase 5 offline outbox and the generic CSV mapping UI from Phase 6, which a second studio needs. Commitments and settlement move to P1. Estimates stay in P0 basic. Every exit gate above still applies to the work it covers.
+
+## Delivery order update (owner decisions O13–O15)
+
+1. Phase 1 identity and isolation, then Phase 2 financial engine, unchanged. Phase 2 adds `origin = ai_capture` and the extraction tables to the schema so AI drafts use the same commands.
+2. AI accuracy spike, as soon as the owner approves the provider and supplies private sample images. It is independent of Phases 1–2 and decides whether the capture promise holds for handwritten Arabic before UI investment.
+3. Phase 3 staff workspace includes AI capture v1 (F28): photo/screenshot/text to draft, confirmation screen, duplicate detection, usage metering.
+4. Phase 4 rich client portal (O15).
+5. Phase 4b management analytics (F29) and AI insights (F30).
+6. Pilot import, online pilot, then Phase 5 offline outbox and generic CSV import, as in O11.

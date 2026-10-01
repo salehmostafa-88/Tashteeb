@@ -11,7 +11,7 @@ Requirements: Node.js 22, pnpm 10 (`corepack enable`), Docker (for the local dat
 ```bash
 pnpm install --frozen-lockfile
 cp .env.example .env.local     # optional in Phase 0; defaults work
-pnpm dev                       # http://localhost:3000 → redirects to /ar
+pnpm dev                       # http://localhost:3000 → /ar or /en from the device language
 ```
 
 Local database (Postgres 17 via the Supabase CLI, synthetic seed only):
@@ -79,6 +79,7 @@ Start with [CLAUDE.md](CLAUDE.md) (coding brief), [decisions](docs/00-decisions.
 | [API schemas](contracts/core.schema.json) | Machine-readable request and dashboard shapes |
 | [Financial fixtures](fixtures/financial-cases.json) | Synthetic acceptance examples, not real client records |
 | [Phase prompts](prompts/phase-prompts.md) | Prompts for continuing implementation |
+| [AI capture and insights](docs/14-ai-capture-and-insights.md) | Photo-to-draft entry, easy-entry principles, rich client and management presentation |
 
 
 ### Data policy

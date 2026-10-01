@@ -4,13 +4,29 @@ const PORTAL = "/portal/3e51b43e-5068-46a4-b815-d6bceef81003";
 const WESTERN_DIGIT = /[0-9]/;
 const ARABIC_INDIC_DIGIT = /[٠-٩]/;
 
-test("root redirects to Arabic, right-to-left, even for an English browser", async ({ browser }) => {
-  const context = await browser.newContext({ locale: "en-US", extraHTTPHeaders: { "Accept-Language": "en-US,en;q=0.9" } });
+for (const [deviceLocale, expected] of [
+  ["ar-EG", "ar"],
+  ["en-US", "en"],
+  ["fr-FR", "en"],
+] as const) {
+  test(`root follows the device language: ${deviceLocale} -> ${expected}`, async ({ browser }) => {
+    const context = await browser.newContext({ locale: deviceLocale });
+    const page = await context.newPage();
+    await page.goto("/");
+    await expect(page).toHaveURL(new RegExp(`/${expected}$`));
+    await expect(page.locator("html")).toHaveAttribute("dir", expected === "ar" ? "rtl" : "ltr");
+    await context.close();
+  });
+}
+
+test("an explicit language switch is remembered over the device language", async ({ browser }) => {
+  const context = await browser.newContext({ locale: "en-US" });
   const page = await context.newPage();
+  await page.goto("/en");
+  await page.getByRole("link", { name: "Switch to Arabic" }).click();
+  await expect(page).toHaveURL(/\/ar$/);
   await page.goto("/");
   await expect(page).toHaveURL(/\/ar$/);
-  await expect(page.locator("html")).toHaveAttribute("lang", "ar");
-  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await context.close();
 });
 

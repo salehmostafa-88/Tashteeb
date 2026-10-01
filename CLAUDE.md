@@ -31,6 +31,8 @@ Next.js version-specific rules: @AGENTS.md
 - No production data, client names or receipt images in Git history, seeds, test logs or public previews.
 - A PWA is not a promise of native App Store applications or guaranteed background sync.
 - No public client links in the MVP. Use authenticated project-specific grants.
+- AI capture only creates drafts: a person confirms, the normal reviewer approves. AI never approves, never publishes and is never the source of a displayed number (docs/14-ai-capture-and-insights.md).
+- The device language picks Arabic or English; English is the fallback (O12).
 
 ## Proposed stack
 

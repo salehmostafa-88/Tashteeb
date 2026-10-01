@@ -78,3 +78,14 @@ These answers came from the product owner during the specification review. They 
 8. Review screens show the fee-rule group's fee delta, not a per-entry fee.
 9. Category cost bars use plain HTML/CSS (native RTL, diverging for refunds); Recharts only for time series with explicit RTL axis handling.
 10. Organization creation is operator-gated during the pilot; self-service signup waits for billing.
+
+## Owner decisions recorded 1 October 2026 (second review)
+
+| ID | Decision | Implementation consequence |
+| --- | --- | --- |
+| O12 | The device/browser language is the default, not Arabic. Supersedes D03 and the Phase 0 "always Arabic" behaviour. | Locale from `Accept-Language`; English when the device is neither Arabic nor English; an explicit switch is remembered in the locale cookie (later: per-user profile preference). |
+| O13 | Data entry must be as easy as taking a photo or screenshot. AI reads it (including handwritten Arabic) and prepares the entry; a person confirms. | AI capture moves from P2 (F25 OCR) to P0 as F28. AI output only ever creates a draft for human confirmation, then the normal approval. See `docs/14-ai-capture-and-insights.md`. |
+| O14 | Easiest data entry everywhere is a product principle, for site engineers and accountants alike. | Photo-first capture, smart defaults, batch capture, quick text entry, spreadsheet-style draft grid, share-to-app. Each phase's UX gate measures entry effort. |
+| O15 | Client presentation is rich: colour, charts, dynamic data. Management presentation is rich in information and analysis, finds gaps and proposes operational improvements. | Rich client portal in Phase 4 (still no invented data). New management analytics with deterministic metrics plus AI-written findings and suggested actions (F29, F30). |
+
+Open owner choices raised by O13/O15 (block the AI features, not other work): approval of a paid AI provider and its API key; studio consent to send receipt images and project metrics to that provider; a private set of sample receipts for the accuracy test.

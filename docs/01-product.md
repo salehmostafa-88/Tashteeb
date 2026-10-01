@@ -47,9 +47,12 @@ P0 is required for a usable controlled pilot. P1 is required for a robust commer
 | F22 | Branded printable project summary and scheduled digest | P1 | Arabic output review and access-scoped generation |
 | F23 | Simple snag list, responsibility and handover checklist | P1 | Tasks can close a stage without changing money |
 | F24 | Portfolio health and configurable alerts | P1 | No cross-currency total without explicit separation |
-| F25 | Native iOS/Android, OCR and bank/accounting integrations | P2 | Separate requirements and cost review |
+| F25 | Native iOS/Android and bank/accounting integrations | P2 | Separate requirements and cost review (OCR moved to F28) |
 | F26 | Drawing versions, material selections, procurement catalogs | P2 | Validated demand before implementation |
 | F27 | Timesheets, design retainers and fixed-price contracts | P2 | Separate financial model, not renamed fit-out fields |
+| F28 | AI capture: photo, screenshot or text (including handwritten Arabic) becomes a pre-filled draft cost, funding or transfer entry for human confirmation | P0 (owner decision O13) | Measured field accuracy on a private sample set; no AI output reaches totals without human confirmation and approval |
+| F29 | Management analytics: runway, burn rate, budget variance, review backlog, missing evidence, stage slippage, anomalies, per-project and portfolio | P0 basic / P1 full (O15) | Every metric reproducible from approved records by an independent test |
+| F30 | AI insights: written findings and suggested actions grounded in F29 metrics | P1 (O15) | Every number shown comes from a metric, not model text; suggestions are labelled and dismissible |
 
 ## End-to-end journeys
 
