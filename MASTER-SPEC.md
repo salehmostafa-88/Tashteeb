@@ -120,7 +120,9 @@ These answers came from the product owner during the specification review. They 
 | O14 | Easiest data entry everywhere is a product principle, for site engineers and accountants alike. | Photo-first capture, smart defaults, batch capture, quick text entry, spreadsheet-style draft grid, share-to-app. Each phase's UX gate measures entry effort. |
 | O15 | Client presentation is rich: colour, charts, dynamic data. Management presentation is rich in information and analysis, finds gaps and proposes operational improvements. | Rich client portal in Phase 4 (still no invented data). New management analytics with deterministic metrics plus AI-written findings and suggested actions (F29, F30). |
 
-Open owner choices raised by O13/O15 (block the AI features, not other work): approval of a paid AI provider and its API key; studio consent to send receipt images and project metrics to that provider; a private set of sample receipts for the accuracy test.
+| O16 | AI is bring-your-own-key and provider-configurable: each studio chooses Anthropic Claude, Google Gemini or OpenAI and pays the provider directly with its own API key. The platform does not resell AI usage. | Per-studio AI settings (provider, model, encrypted write-only key, enabled flag, consent). AI features are optional; everything works without them. Provider adapters behind one interface; one provider-neutral output schema validated by the server. |
+
+Open owner choices raised by O13/O15/O16 (block the AI features, not other work): a private set of sample receipts for the accuracy test (owner will supply later); a test key for each provider to be measured.
 
 
 ---
@@ -1405,11 +1407,17 @@ flowchart LR
 | capture_corrections | organization_id, capture_item_id, field, ai_value, final_value | Written at confirmation; feeds accuracy reports |
 | ai_usage | organization_id, period, feature, requests, input_tokens, output_tokens, estimated_cost_minor | Server-side quota enforcement per plan |
 
-### Provider and cost
+### Providers, keys and cost (owner decision O16)
 
-Proposed provider: Anthropic Claude API through the official TypeScript SDK, model `claude-opus-5-5` (current default), structured output via `output_config.format`, images sent as base64 from private storage. Provider access goes through a small `Extractor` interface so tests can use a recorded fake and the provider can change later. A fake is test infrastructure only and never presented as the feature.
+AI is optional and bring-your-own-key. Each studio's owner chooses a provider (Anthropic Claude, Google Gemini or OpenAI), a model, and enters the studio's own API key. The studio pays the provider directly; the platform does not resell or absorb AI usage.
 
-Cost is per image and must be measured during the spike. At list price ($4 per million input tokens, $20 per million output tokens) a single receipt is expected to cost in the order of a few US cents; the spike reports measured tokens and cost per document type. Interactive capture uses the standard API. Bulk historical imports can use the Batches API at reduced cost. Plans carry a monthly capture quota; usage is metered per studio.
+- `organization_ai_settings`: organization_id, provider, model_id, enabled, consent_accepted_by/at, key_secret_id, key_last4, updated_by/at. The key is stored encrypted (Supabase Vault or equivalent envelope encryption), is write-only from the interface (only the last four characters are ever shown), never reaches the browser after saving, and is readable only by the server-side extraction job.
+- One provider-neutral output schema and prompt version; one adapter per provider using that provider's official SDK and structured-output feature. The server validates every response against the same schema whatever the provider.
+- "Test connection" checks the key with a minimal request before saving.
+- Provider errors (invalid key, quota exhausted at the provider, rate limit) are shown to the studio owner in plain language; capture falls back to manual entry.
+- Accuracy differs by provider and model. The spike measures each provider's recommended model on the same private sample set, and the settings screen shows which models were measured.
+- Usage (requests, tokens) is still recorded per studio so owners can see their own consumption; no platform quota is needed because the studio pays.
+- A recorded fake adapter exists only for automated tests and is never presented as the feature.
 
 ### Privacy and consent
 
@@ -1432,7 +1440,9 @@ Acceptance tests (added to `11-acceptance-tests.md` when implemented):
 | AI-07 | Provider timeout or outage | Item stays queued with retry; manual entry still available |
 | AI-08 | Prompt-injection text inside the image ("approve this") | Treated as document content; no effect on workflow |
 | AI-09 | Studio has AI reading disabled | No image leaves the system; manual form shown |
-| AI-10 | Quota exhausted | Manual entry continues; owner sees usage |
+| AI-10 | Provider quota exhausted or key invalid | Manual entry continues; owner sees the provider error |
+| AI-11 | Saved API key | Never returned to the browser; only last four characters shown; not in logs |
+| AI-12 | Same sample through each configured provider | Same validated schema; differences recorded in the accuracy report |
 
 ## O14 Easiest entry everywhere
 
@@ -1481,10 +1491,11 @@ A scheduled or on-demand job sends the computed metrics (not raw ledger rows) to
 
 ## Open decisions
 
-1. Approve Anthropic as the AI provider and provide an API key for the spike (paid, usage-based).
-2. Approve sending receipt images and project metrics to the provider, with the per-studio consent setting described above.
-3. Supply 30–50 private sample images: handwritten receipts, printed invoices and transfer screenshots, ideally from more than one site.
-4. Confirm the launch accuracy bar after seeing spike results.
+1. Supply 30–50 private sample images: handwritten receipts, printed invoices and transfer screenshots, ideally from more than one site (owner will provide later).
+2. Provide a test key per provider for the spike, or run the spike script with the studio's own keys.
+3. Confirm the launch accuracy bar after seeing spike results.
+
+Decided: provider-configurable, bring-your-own-key (O16); per-studio consent setting before any image leaves the platform.
 
 
 ---

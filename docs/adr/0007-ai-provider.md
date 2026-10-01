@@ -1,21 +1,16 @@
-# ADR 0007: AI provider for capture and insights
+# ADR 0007: AI providers for capture and insights
 
-Status: Proposed; requires owner approval of a paid provider (O13, O15) · 1 October 2026
+Status: Accepted in principle (owner decision O16); implementation in Phase 3/4b · 1 October 2026
 
-## Decision (proposed)
+## Decision
 
-- Provider: Anthropic Claude API via the official `@anthropic-ai/sdk` TypeScript SDK, called only from server-side jobs, never from the browser.
-- Model: `claude-opus-5-5` (current default) for both receipt extraction and insight writing. Effort and model are configuration, so cost can be tuned after measurement without code changes; any change is the owner's decision.
-- Output: structured outputs (`output_config.format` with a JSON schema) so responses are machine-validated; amounts come back as text and are parsed exactly by the application.
-- Images: base64 from private storage after EXIF stripping. No public URLs are given to the provider.
-- Credentials: `ANTHROPIC_API_KEY` as a server-only secret, never `NEXT_PUBLIC_`, absent from CI.
-- Interface: `Extractor` and `InsightWriter` interfaces with the Anthropic implementation and a recorded fake for tests.
-- Bulk: historical receipt imports may use the Batches API; interactive capture uses the standard API with retries and a timeout.
-
-## Why
-
-Vision plus strict structured output in one call, good Arabic handling, and an SDK in the project's language. A dedicated OCR engine plus a separate language model would add a second vendor and a second failure surface; the spike measures whether the single-model approach meets the accuracy bar on handwritten Arabic.
+- AI is optional and bring-your-own-key. Each studio selects Anthropic Claude, Google Gemini or OpenAI, a model, and its own API key, and pays the provider directly.
+- Calls are server-side only, from jobs, never from the browser.
+- One provider-neutral prompt version and JSON output schema. One adapter per provider using that provider's official SDK and its structured-output feature. The server validates every response against the same schema and parses amounts exactly with the application's own parser.
+- Keys are stored encrypted, write-only from the interface (last four characters displayed), decrypted only inside the extraction/insight job, never logged, never in `NEXT_PUBLIC_*`, absent from CI.
+- Default model suggestion for Anthropic: `claude-opus-5-5`. Model suggestions for Gemini and OpenAI are verified against each provider's current documentation when the adapter is implemented; the owner can type any model ID the provider accepts.
+- A recorded fake adapter exists only for automated tests.
 
 ## Consequences
 
-Usage-based cost per studio, metered in `ai_usage` and limited by plan quota. Receipt images leave the platform for the provider, so per-studio consent and the data-transfer review in ADR 0004 apply. If the spike fails the accuracy bar, revisit with the measured failure types before building the UI.
+No AI cost for the platform operator, but accuracy and behaviour vary by provider and model; the accuracy spike measures each provider on the same private sample set and the settings screen reports which models were measured. Each studio must accept a consent notice before images leave the platform. Supporting three SDKs increases maintenance; adapters stay thin and share one validation path.
