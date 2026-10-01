@@ -1,0 +1,32 @@
+{
+  "notice": "Synthetic data only. This fixture exercises arithmetic, not authorization, refund caps, currency validation or database transactions.",
+  "currency": "EGP",
+  "rounding_cases": [
+    {"numerator": "5000", "denominator": "10000", "expected": "1"},
+    {"numerator": "-5000", "denominator": "10000", "expected": "-1"},
+    {"numerator": "4999", "denominator": "10000", "expected": "0"},
+    {"numerator": "-4999", "denominator": "10000", "expected": "0"}
+  ],
+  "base": {
+    "rules": {"r18": 1800, "r20": 2000},
+    "funding_minor": "15000000",
+    "withdrawals_minor": null,
+    "cash_history_complete": false,
+    "costs": [
+      {"id": "c1", "payer": "company", "kind": "payment", "amount_minor": "10000001", "status": "approved", "fee_eligible": true, "rule": "r18"},
+      {"id": "d1", "payer": "client_direct", "kind": "payment", "amount_minor": "2000002", "status": "approved", "fee_eligible": true, "rule": "r18"}
+    ]
+  },
+  "cases": [
+    {"id": "baseline", "expected": {"company_minor": "10000001", "direct_minor": "2000002", "fee_minor": "2160001", "remaining_minor": "2839998", "total_minor": "14160004", "cash_proxy_minor": null, "fee_balance_minor": null}},
+    {"id": "pending_excluded", "append_costs": [{"id": "p1", "payer": "company", "kind": "payment", "amount_minor": "123450", "status": "submitted", "fee_eligible": true, "rule": "r18"}], "expected": {"company_minor": "10000001", "direct_minor": "2000002", "fee_minor": "2160001", "remaining_minor": "2839998", "total_minor": "14160004", "cash_proxy_minor": null, "fee_balance_minor": null}},
+    {"id": "company_plus_100", "append_costs": [{"id": "c2", "payer": "company", "kind": "payment", "amount_minor": "10000", "status": "approved", "fee_eligible": true, "rule": "r18"}], "expected": {"company_minor": "10010001", "direct_minor": "2000002", "fee_minor": "2161801", "remaining_minor": "2828198", "total_minor": "14171804", "cash_proxy_minor": null, "fee_balance_minor": null}},
+    {"id": "direct_plus_100", "append_costs": [{"id": "d2", "payer": "client_direct", "kind": "payment", "amount_minor": "10000", "status": "approved", "fee_eligible": true, "rule": "r18"}], "expected": {"company_minor": "10000001", "direct_minor": "2010002", "fee_minor": "2161801", "remaining_minor": "2838198", "total_minor": "14171804", "cash_proxy_minor": null, "fee_balance_minor": null}},
+    {"id": "company_refund_100", "append_costs": [{"id": "r1", "payer": "company", "kind": "refund", "amount_minor": "10000", "status": "approved", "fee_eligible": true, "rule": "r18", "refund_of_id": "c1"}], "expected": {"company_minor": "9990001", "direct_minor": "2000002", "fee_minor": "2158201", "remaining_minor": "2851798", "total_minor": "14148204", "cash_proxy_minor": null, "fee_balance_minor": null}},
+    {"id": "direct_fee_ineligible", "set_direct_ineligible": true, "expected": {"company_minor": "10000001", "direct_minor": "2000002", "fee_minor": "1800000", "remaining_minor": "3199999", "total_minor": "13800003", "cash_proxy_minor": null, "fee_balance_minor": null}},
+    {"id": "group_rounding", "override": {"funding_minor": "100", "costs": [{"id": "t1", "payer": "company", "kind": "payment", "amount_minor": "3", "status": "approved", "fee_eligible": true, "rule": "r18"}, {"id": "t2", "payer": "company", "kind": "payment", "amount_minor": "3", "status": "approved", "fee_eligible": true, "rule": "r18"}]}, "expected": {"company_minor": "6", "direct_minor": "0", "fee_minor": "1", "remaining_minor": "93", "total_minor": "7", "cash_proxy_minor": null, "fee_balance_minor": null}},
+    {"id": "refund_original_rate", "override": {"funding_minor": "30000", "costs": [{"id": "old", "payer": "company", "kind": "payment", "amount_minor": "10000", "status": "approved", "fee_eligible": true, "rule": "r18"}, {"id": "new", "payer": "company", "kind": "payment", "amount_minor": "10000", "status": "approved", "fee_eligible": true, "rule": "r20"}, {"id": "old-refund", "payer": "company", "kind": "refund", "amount_minor": "1000", "status": "approved", "fee_eligible": true, "rule": "r18", "refund_of_id": "old"}]}, "expected": {"company_minor": "19000", "direct_minor": "0", "fee_minor": "3620", "remaining_minor": "7380", "total_minor": "22620", "cash_proxy_minor": null, "fee_balance_minor": null}},
+    {"id": "known_withdrawal", "override": {"withdrawals_minor": "1000000", "cash_history_complete": true}, "expected": {"company_minor": "10000001", "direct_minor": "2000002", "fee_minor": "2160001", "remaining_minor": "2839998", "total_minor": "14160004", "cash_proxy_minor": "3999999", "fee_balance_minor": "1160001"}},
+    {"id": "negative_remaining", "override": {"funding_minor": "1000000"}, "expected": {"company_minor": "10000001", "direct_minor": "2000002", "fee_minor": "2160001", "remaining_minor": "-11160002", "total_minor": "14160004", "cash_proxy_minor": null, "fee_balance_minor": null}}
+  ]
+}

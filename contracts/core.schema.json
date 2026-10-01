@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:studio-project-portal:contracts:v1",
+  "title": "Studio Project Portal core contract definitions",
+  "description": "Core request shapes to implement and extend into a full OpenAPI contract per phase. These definitions are not an implemented server.",
+  "$defs": {
+    "uuid": {"type": "string", "format": "uuid"},
+    "minorUnits": {"type": "string", "pattern": "^-?(0|[1-9][0-9]*)$"},
+    "positiveEntryMinorUnits": {"type": "string", "pattern": "^[1-9][0-9]{0,13}$"},
+    "currency": {"type": "string", "enum": ["EGP", "USD", "EUR", "AED", "SAR"]},
+    "CostDraftCreate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["client_record_id", "payer", "kind", "amount_minor", "currency", "occurred_on", "description", "category_id", "fee_eligible", "attachment_ids"],
+      "properties": {
+        "client_record_id": {"$ref": "#/$defs/uuid"},
+        "payer": {"enum": ["company", "client_direct"]},
+        "kind": {"enum": ["payment", "refund"]},
+        "amount_minor": {"$ref": "#/$defs/positiveEntryMinorUnits"},
+        "currency": {"$ref": "#/$defs/currency"},
+        "occurred_on": {"type": "string", "format": "date"},
+        "description": {"type": "string", "minLength": 1, "maxLength": 500},
+        "category_id": {"$ref": "#/$defs/uuid"},
+        "party_id": {"anyOf": [{"$ref": "#/$defs/uuid"}, {"type": "null"}]},
+        "fee_eligible": {"type": "boolean"},
+        "refund_of_id": {"$ref": "#/$defs/uuid"},
+        "attachment_ids": {"type": "array", "maxItems": 5, "uniqueItems": true, "items": {"$ref": "#/$defs/uuid"}},
+        "missing_receipt_reason": {"type": ["string", "null"], "maxLength": 2000}
+      },
+      "allOf": [{"if": {"properties": {"kind": {"const": "refund"}}}, "then": {"required": ["refund_of_id"]}, "else": {"not": {"required": ["refund_of_id"]}}}]
+    },
+    "ApprovalCommand": {
+      "type": "object", "additionalProperties": false,
+      "required": ["expected_version"],
+      "properties": {
+        "expected_version": {"type": "integer", "minimum": 1},
+        "review_note": {"type": ["string", "null"], "maxLength": 2000},
+        "owner_override_reason": {"type": ["string", "null"], "maxLength": 2000}
+      }
+    },
+    "StageUpdateSubmit": {
+      "type": "object", "additionalProperties": false,
+      "required": ["client_record_id", "stage_plan_id", "stable_stage_key", "status", "progress_bps", "note"],
+      "properties": {
+        "client_record_id": {"$ref": "#/$defs/uuid"},
+        "stage_plan_id": {"$ref": "#/$defs/uuid"},
+        "stable_stage_key": {"$ref": "#/$defs/uuid"},
+        "status": {"enum": ["unknown", "not_started", "in_progress", "blocked", "completed"]},
+        "progress_bps": {"type": ["integer", "null"], "minimum": 0, "maximum": 10000},
+        "actual_start": {"type": ["string", "null"], "format": "date"},
+        "actual_end": {"type": ["string", "null"], "format": "date"},
+        "note": {"type": "string", "maxLength": 2000}
+      },
+      "$comment": "Cross-field status/date rules and project authorization are mandatory server/domain checks. Skipped stages require a plan revision, not an update."
+    },
+    "FinancialSummary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["funding_received_minor", "company_paid_cost_minor", "client_direct_paid_cost_minor", "management_fee_minor", "funds_remaining_after_fees_minor", "recorded_project_cost_minor", "budget_cost_base_minor", "cash_proxy_minor", "cash_proxy_unavailable_reason"],
+      "properties": {
+        "funding_received_minor": {"$ref": "#/$defs/minorUnits"},
+        "company_paid_cost_minor": {"$ref": "#/$defs/minorUnits"},
+        "client_direct_paid_cost_minor": {"$ref": "#/$defs/minorUnits"},
+        "management_fee_minor": {"$ref": "#/$defs/minorUnits"},
+        "funds_remaining_after_fees_minor": {"$ref": "#/$defs/minorUnits"},
+        "recorded_project_cost_minor": {"$ref": "#/$defs/minorUnits"},
+        "budget_cost_base_minor": {"anyOf": [{"$ref": "#/$defs/minorUnits"}, {"type": "null"}]},
+        "cash_proxy_minor": {"anyOf": [{"$ref": "#/$defs/minorUnits"}, {"type": "null"}]},
+        "cash_proxy_unavailable_reason": {"type": ["string", "null"]}
+      }
+    },
+    "ApiError": {
+      "type": "object", "additionalProperties": false, "required": ["error"],
+      "properties": {"error": {"type": "object", "additionalProperties": false, "required": ["code", "message_key", "request_id"], "properties": {"code": {"type": "string"}, "message_key": {"type": "string"}, "request_id": {"type": "string"}, "fields": {"type": "object", "additionalProperties": {"type": "string"}}}}}
+    }
+  }
+}
